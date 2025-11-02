@@ -1,9 +1,10 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { optimizeHTML } from './vite-build-plugin.js'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), optimizeHTML()],
   base: '/Asia-Taste/',
   build: {
     rollupOptions: {
@@ -16,8 +17,15 @@ export default defineConfig({
     },
     chunkSizeWarningLimit: 1000,
     cssCodeSplit: true,
-    minify: 'esbuild', // Faster than terser and works without extra dependencies
-    sourcemap: false, // Disable sourcemaps for production
+    minify: 'esbuild',
+    sourcemap: false,
+    cssMinify: true,
+    // Optimize asset handling
+    assetsInlineLimit: 4096, // Inline small assets (< 4KB)
+  },
+  // Optimize dependencies
+  optimizeDeps: {
+    include: ['react', 'react-dom'],
   },
 })
 
