@@ -95,21 +95,6 @@ const Features = memo(() => {
     }, 100)
   }
 
-  // Verhindere Scrollen während Swipe-Geste
-  const handleTouchMove = (e) => {
-    if (touchStart !== null && touchStartY !== null) {
-      const currentX = e.targetTouches[0].clientX
-      const currentY = e.targetTouches[0].clientY
-      const horizontalDistance = Math.abs(touchStart - currentX)
-      const verticalDistance = Math.abs(touchStartY - currentY)
-      
-      // Wenn horizontale Bewegung größer ist als vertikale, verhindere vertikales Scrollen
-      if (horizontalDistance > 5 && horizontalDistance > verticalDistance) {
-        e.preventDefault()
-      }
-    }
-    onTouchMove(e)
-  }
 
   // Scroll zu aktueller Karte bei Index-Änderung
   useEffect(() => {
@@ -188,14 +173,14 @@ const Features = memo(() => {
           ref={scrollContainerRef}
           className="md:hidden flex overflow-x-auto snap-x snap-mandatory scrollbar-hide mb-20 gap-6 px-4"
           onTouchStart={onTouchStart}
-          onTouchMove={handleTouchMove}
           onTouchEnd={onTouchEnd}
           style={{
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
             WebkitOverflowScrolling: 'touch',
             paddingLeft: '1rem',
-            paddingRight: '1rem'
+            paddingRight: '1rem',
+            touchAction: 'pan-x pinch-zoom' // Erlaube nur horizontales Scrollen
           }}
         >
           {features.map((feature, index) => (
