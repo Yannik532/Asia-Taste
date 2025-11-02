@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, useState, useEffect } from 'react'
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver'
 import heroBgImage from '../hero.png'
 
@@ -7,6 +7,29 @@ const Testimonials = memo(() => {
     rootMargin: '100px',
     disconnectAfterIntersect: false,
   })
+  const [cardsVisible, setCardsVisible] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  useEffect(() => {
+    if (isSectionVisible) {
+      // Kurze Verzögerung für bessere Animation
+      const timer = setTimeout(() => {
+        setCardsVisible(true)
+      }, 200)
+      return () => clearTimeout(timer)
+    } else {
+      setCardsVisible(false)
+    }
+  }, [isSectionVisible])
   const sortiment = [
     {
       title: 'Frische Ramen',
@@ -88,10 +111,37 @@ const Testimonials = memo(() => {
 
           {/* Sortiment als moderne Karten */}
           <div className="grid md:grid-cols-3 gap-8 md:gap-12">
-            {sortiment.map((category, index) => (
+            {sortiment.map((category, index) => {
+              // Bestimme die Animation-Richtung basierend auf Index und Screen-Größe
+              let animationClass = ''
+              let delayStyle = {}
+              
+              if (isMobile) {
+                // Mobile: Alle Cards von links, nacheinander
+                animationClass = cardsVisible ? 'animate-slide-in-left' : 'opacity-0 -translate-x-[200px]'
+                delayStyle = { animationDelay: `${0.2 + index * 0.2}s` }
+              } else {
+                // Desktop: Verschiedene Richtungen
+                if (index === 0) {
+                  // Erste Card: von links
+                  animationClass = cardsVisible ? 'animate-slide-in-left' : 'opacity-0 -translate-x-[200px]'
+                  delayStyle = { animationDelay: '0.2s' }
+                } else if (index === 1) {
+                  // Zweite Card: von oben
+                  animationClass = cardsVisible ? 'animate-slide-in-top' : 'opacity-0 -translate-y-[200px]'
+                  delayStyle = { animationDelay: '0.4s' }
+                } else if (index === 2) {
+                  // Dritte Card: von rechts
+                  animationClass = cardsVisible ? 'animate-slide-in-right' : 'opacity-0 translate-x-[200px]'
+                  delayStyle = { animationDelay: '0.6s' }
+                }
+              }
+              
+              return (
               <div 
                 key={index}
-                className="relative group"
+                className={`relative group transition-all duration-700 ease-out ${animationClass}`}
+                style={cardsVisible ? delayStyle : {}}
               >
                 {/* Moderne Karte mit Rahmen */}
                 <div className="bg-green-50/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl border-2 border-green-300/60 hover:border-green-500/80 transition-all duration-300 hover:shadow-2xl h-full flex flex-col">
@@ -119,7 +169,8 @@ const Testimonials = memo(() => {
                   </ul>
                 </div>
               </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       </div>

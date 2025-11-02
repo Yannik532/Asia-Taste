@@ -85,9 +85,19 @@ const Features = memo(() => {
     const verticalDistance = Math.abs(touchStartY - touchEndY)
     
     // Prüfe ob es wirklich ein horizontales Swipe war (nicht vertikales Scrollen)
-    // Horizontal muss mindestens doppelt so groß sein wie vertikal UND mindestens 100px
-    if (horizontalDistance < minSwipeDistance || horizontalDistance < verticalDistance * 2) {
-      // Zu kleine Bewegung oder hauptsächlich vertikale Bewegung = kein Swipe, erlaube normales Scrollen
+    // Horizontal muss mindestens doppelt so groß sein wie vertikal UND mindestens 80px
+    // Wenn vertikale Bewegung größer ist, erlaube normales Scrollen
+    if (verticalDistance > horizontalDistance || horizontalDistance < minSwipeDistance) {
+      // Hauptsächlich vertikale Bewegung oder zu kleine horizontale Bewegung = kein Swipe, erlaube normales Scrollen
+      setTouchStart(null)
+      setTouchEnd(null)
+      setTouchStartY(null)
+      setTouchEndY(null)
+      return
+    }
+    
+    // Wenn horizontale Bewegung nicht deutlich größer ist als vertikale, erlaube Scrollen
+    if (horizontalDistance < verticalDistance * 1.5) {
       setTouchStart(null)
       setTouchEnd(null)
       setTouchStartY(null)
@@ -224,7 +234,7 @@ const Features = memo(() => {
             WebkitOverflowScrolling: 'touch',
             paddingLeft: '1rem',
             paddingRight: '1rem',
-            touchAction: 'pan-x pinch-zoom',
+            touchAction: 'pan-y pan-x pinch-zoom', // Erlaube sowohl vertikales als auch horizontales Scrollen
             scrollBehavior: 'smooth',
             scrollSnapType: 'x mandatory'
           }}
