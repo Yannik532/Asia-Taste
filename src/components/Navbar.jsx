@@ -35,8 +35,13 @@ const Navbar = memo(() => {
           <div className="flex-shrink-0">
             <div className="flex items-center space-x-3">
               <div 
-                className="w-[72px] h-[72px] rounded-full bg-white p-1 flex items-center justify-center shadow-md cursor-pointer hover:opacity-90 transition-opacity overflow-hidden"
-                onClick={() => setIsLogoModalOpen(true)}
+                className="w-[72px] h-[72px] rounded-full bg-white p-1 flex items-center justify-center shadow-md md:cursor-pointer md:hover:opacity-90 transition-opacity overflow-hidden"
+                onClick={(e) => {
+                  // Nur auf Desktop klickbar (>= 768px)
+                  if (window.innerWidth >= 768) {
+                    setIsLogoModalOpen(true)
+                  }
+                }}
                 style={{ borderRadius: '50%' }}
               >
                 <img 
@@ -144,30 +149,33 @@ const Navbar = memo(() => {
         </div>
       </div>
 
-      {/* Lightbox Modal für das Logo */}
-      {isLogoModalOpen && (
-        <div 
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 p-4"
-          onClick={() => setIsLogoModalOpen(false)}
-        >
-          <div className="relative max-w-4xl max-h-full">
-            <button
+          {/* Lightbox Modal für das Logo */}
+          {isLogoModalOpen && (
+            <div 
+              className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 p-4"
               onClick={() => setIsLogoModalOpen(false)}
-              className="absolute -top-12 right-0 text-white text-4xl hover:text-gray-300 transition-colors"
-              aria-label="Schließen"
             >
-              ×
-            </button>
-            <img 
-              src={logoImage} 
-              alt="Asia Taste Logo" 
-              className="max-w-full max-h-[90vh] object-contain rounded-lg"
-              onClick={(e) => e.stopPropagation()}
-              loading="lazy"
-            />
-          </div>
-        </div>
-      )}
+              <div className="relative max-w-4xl max-h-full">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setIsLogoModalOpen(false)
+                  }}
+                  className="absolute top-4 right-4 md:top-8 md:right-8 text-white text-5xl md:text-6xl hover:text-gray-300 transition-colors font-light leading-none z-10 bg-black/50 rounded-full w-12 h-12 md:w-14 md:h-14 flex items-center justify-center backdrop-blur-sm shadow-lg"
+                  aria-label="Schließen"
+                >
+                  ×
+                </button>
+                <img 
+                  src={logoImage} 
+                  alt="Asia Taste Logo" 
+                  className="max-w-full max-h-[90vh] object-contain rounded-lg"
+                  onClick={(e) => e.stopPropagation()}
+                  loading="lazy"
+                />
+              </div>
+            </div>
+          )}
     </nav>
   )
 })

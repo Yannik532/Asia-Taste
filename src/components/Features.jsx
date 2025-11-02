@@ -13,6 +13,7 @@ const Features = memo(() => {
   const [touchStart, setTouchStart] = useState(null)
   const [touchEnd, setTouchEnd] = useState(null)
   const [touchStartY, setTouchStartY] = useState(null)
+  const [touchEndY, setTouchEndY] = useState(null)
   const [openImage, setOpenImage] = useState(null)
   const [flippedCards, setFlippedCards] = useState({})
   const [shouldLoadBackground, setShouldLoadBackground] = useState(false)
@@ -31,8 +32,9 @@ const Features = memo(() => {
     }
   }, [isSectionVisible])
 
-  // Mindestdistanz für Swipe-Geste (in Pixel)
-  const minSwipeDistance = 50
+  // Mindestdistanz für Swipe-Geste (in Pixel) - erhöht für weniger empfindliches Scrollen
+  const minSwipeDistance = 80
+  const [isAnimating, setIsAnimating] = useState(false)
 
   const features = [
     {
@@ -60,31 +62,69 @@ const Features = memo(() => {
 
   const onTouchStart = (e) => {
     setTouchEnd(null)
+    setTouchEndY(null)
     setTouchStart(e.targetTouches[0].clientX)
     setTouchStartY(e.targetTouches[0].clientY)
   }
 
   const onTouchMove = (e) => {
     setTouchEnd(e.targetTouches[0].clientX)
+    setTouchEndY(e.targetTouches[0].clientY)
   }
 
   const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) {
+    if (!touchStart || !touchEnd || !touchStartY || !touchEndY) {
       setTouchStart(null)
       setTouchEnd(null)
       setTouchStartY(null)
+      setTouchEndY(null)
       return
     }
     
+    const horizontalDistance = Math.abs(touchStart - touchEnd)
+    const verticalDistance = Math.abs(touchStartY - touchEndY)
+    
+    // Prüfe ob es wirklich ein horizontales Swipe war (nicht vertikales Scrollen)
+    // Horizontal muss mindestens doppelt so groß sein wie vertikal UND mindestens 100px
+    if (horizontalDistance < minSwipeDistance || horizontalDistance < verticalDistance * 2) {
+      // Zu kleine Bewegung oder hauptsächlich vertikale Bewegung = kein Swipe, erlaube normales Scrollen
+      setTouchStart(null)
+      setTouchEnd(null)
+      setTouchStartY(null)
+      setTouchEndY(null)
+      return
+    }
+    
+    // Verhindere Swipe während Animation
+    if (isAnimating) {
+      setTouchStart(null)
+      setTouchEnd(null)
+      setTouchStartY(null)
+      setTouchEndY(null)
+      return
+    }
+
     const distance = touchStart - touchEnd
     const isLeftSwipe = distance > minSwipeDistance
     const isRightSwipe = distance < -minSwipeDistance
 
-    // Nur wenn es wirklich ein Swipe war, navigiere durch die Cards
+    // Nur wenn es wirklich ein Swipe war, navigiere durch die Cards - langsam, eine nach der anderen
     if (isLeftSwipe && currentIndex < features.length - 1) {
-      setCurrentIndex(currentIndex + 1)
+      setIsAnimating(true)
+      const nextIndex = currentIndex + 1
+      setCurrentIndex(nextIndex)
+      // Warte bis Animation fertig ist (ca. 500ms für smooth scroll)
+      setTimeout(() => {
+        setIsAnimating(false)
+      }, 600)
     } else if (isRightSwipe && currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1)
+      setIsAnimating(true)
+      const prevIndex = currentIndex - 1
+      setCurrentIndex(prevIndex)
+      // Warte bis Animation fertig ist
+      setTimeout(() => {
+        setIsAnimating(false)
+      }, 600)
     }
     
     // Kurze Verzögerung, damit onClick nicht getriggert wird wenn es ein Swipe war
@@ -92,11 +132,12 @@ const Features = memo(() => {
       setTouchStart(null)
       setTouchEnd(null)
       setTouchStartY(null)
+      setTouchEndY(null)
     }, 100)
   }
 
 
-  // Scroll zu aktueller Karte bei Index-Änderung
+  // Scroll zu aktueller Karte bei Index-Änderung - langsam und smooth
   useEffect(() => {
     if (scrollContainerRef.current) {
       // Berechne die Scroll-Position basierend auf Card-Breite und Abstand
@@ -105,7 +146,10 @@ const Features = memo(() => {
       const scrollPosition = currentIndex * (cardWidth + gap)
       scrollContainerRef.current.scrollTo({
         left: scrollPosition,
-        behavior: 'smooth'
+        behavior: 'smooth',
+        // Langsamere Scroll-Geschwindigkeit
+        block: 'nearest',
+        inline: 'center'
       })
     }
   }, [currentIndex])
@@ -180,7 +224,9 @@ const Features = memo(() => {
             WebkitOverflowScrolling: 'touch',
             paddingLeft: '1rem',
             paddingRight: '1rem',
-            touchAction: 'pan-x pinch-zoom' // Erlaube nur horizontales Scrollen
+            touchAction: 'pan-x pinch-zoom',
+            scrollBehavior: 'smooth',
+            scrollSnapType: 'x mandatory'
           }}
         >
           {features.map((feature, index) => (
@@ -190,7 +236,9 @@ const Features = memo(() => {
               style={{ 
                 width: 'calc(100vw - 3rem)',
                 minWidth: 'calc(100vw - 3rem)',
-                marginRight: '1.5rem'
+                marginRight: '1.5rem',
+                scrollSnapAlign: 'center',
+                scrollSnapStop: 'always'
               }}
             >
               {/* Card Container mit 3D Flip - Mobile: per Klick, Desktop: per Hover */}
