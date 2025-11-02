@@ -10,7 +10,7 @@ const Hero = () => {
         backgroundColor: '#8A8A8A',
       }}
     >
-      {/* Gespiegeltes Hintergrundbild */}
+      {/* Gespiegeltes Hintergrundbild - Eager loaded für LCP */}
       <div 
         className="absolute inset-0"
         style={{

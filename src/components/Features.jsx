@@ -264,6 +264,8 @@ const Features = () => {
                   alt="Asia Taste" 
                   className="max-w-full h-auto rounded-lg shadow-md cursor-pointer hover:opacity-90 transition-opacity"
                   onClick={() => setOpenImage('ta1')}
+                  loading="lazy"
+                  decoding="async"
                 />
               </div>
             </div>
@@ -284,6 +286,8 @@ const Features = () => {
                   alt="Asia Taste" 
                   className="max-w-full h-auto rounded-lg shadow-md cursor-pointer hover:opacity-90 transition-opacity"
                   onClick={() => setOpenImage('ta')}
+                  loading="lazy"
+                  decoding="async"
                 />
               </div>
             </div>

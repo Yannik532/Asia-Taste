@@ -42,6 +42,8 @@ const Navbar = () => {
                   src={logoImage} 
                   alt="Asia Taste Logo" 
                   className="w-full h-full rounded-full object-cover scale-110 ml-3.5"
+                  loading="eager"
+                  fetchPriority="high"
                 />
               </div>
               <a href="#home" className="text-2xl md:text-3xl font-bold text-green-500 hover:text-green-400 transition-colors">
@@ -157,6 +159,7 @@ const Navbar = () => {
               alt="Asia Taste Logo" 
               className="max-w-full max-h-[90vh] object-contain rounded-lg"
               onClick={(e) => e.stopPropagation()}
+              loading="lazy"
             />
           </div>
         </div>
