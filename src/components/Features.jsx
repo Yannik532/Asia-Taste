@@ -1,4 +1,6 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, memo } from 'react'
+import { useIntersectionObserver } from '../hooks/useIntersectionObserver'
+// Import images - Vite will handle optimization, but we'll lazy load via CSS
 import regalImage from '../regal.png'
 import togoImage from '../togo.png'
 import drinksImage from '../drinks.png'
@@ -6,13 +8,28 @@ import stuffImage from '../stuff.png'
 import taImage from '../ta.png'
 import ta1Image from '../ta1.png'
 
-const Features = () => {
+const Features = memo(() => {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [touchStart, setTouchStart] = useState(null)
   const [touchEnd, setTouchEnd] = useState(null)
   const [touchStartY, setTouchStartY] = useState(null)
   const [openImage, setOpenImage] = useState(null)
+  const [flippedCards, setFlippedCards] = useState({})
+  const [shouldLoadBackground, setShouldLoadBackground] = useState(false)
   const scrollContainerRef = useRef(null)
+
+  // Intersection Observer for lazy loading background image
+  const [sectionRef, isSectionVisible] = useIntersectionObserver({
+    rootMargin: '100px',
+    disconnectAfterIntersect: false,
+  })
+
+  // Load background when section becomes visible
+  useEffect(() => {
+    if (isSectionVisible) {
+      setShouldLoadBackground(true)
+    }
+  }, [isSectionVisible])
 
   // Mindestdistanz für Swipe-Geste (in Pixel)
   const minSwipeDistance = 50
@@ -52,21 +69,30 @@ const Features = () => {
   }
 
   const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return
+    if (!touchStart || !touchEnd) {
+      setTouchStart(null)
+      setTouchEnd(null)
+      setTouchStartY(null)
+      return
+    }
     
     const distance = touchStart - touchEnd
     const isLeftSwipe = distance > minSwipeDistance
     const isRightSwipe = distance < -minSwipeDistance
 
+    // Nur wenn es wirklich ein Swipe war, navigiere durch die Cards
     if (isLeftSwipe && currentIndex < features.length - 1) {
       setCurrentIndex(currentIndex + 1)
     } else if (isRightSwipe && currentIndex > 0) {
       setCurrentIndex(currentIndex - 1)
     }
     
-    setTouchStart(null)
-    setTouchEnd(null)
-    setTouchStartY(null)
+    // Kurze Verzögerung, damit onClick nicht getriggert wird wenn es ein Swipe war
+    setTimeout(() => {
+      setTouchStart(null)
+      setTouchEnd(null)
+      setTouchStartY(null)
+    }, 100)
   }
 
   // Verhindere Scrollen während Swipe-Geste
@@ -85,18 +111,39 @@ const Features = () => {
     onTouchMove(e)
   }
 
-  // Scroll zu aktueller Karte bei Index-Änderung (nur bei Swipe-Geste)
+  // Scroll zu aktueller Karte bei Index-Änderung
   useEffect(() => {
-    if (scrollContainerRef.current && touchStart === null) {
-      // Verwende window.innerWidth für Viewport-Breite
-      const cardWidth = window.innerWidth
-      const scrollPosition = currentIndex * cardWidth
+    if (scrollContainerRef.current) {
+      // Berechne die Scroll-Position basierend auf Card-Breite und Abstand
+      const cardWidth = window.innerWidth - 3 * 16 // 3rem = 48px total padding
+      const gap = 1.5 * 16 // 1.5rem gap
+      const scrollPosition = currentIndex * (cardWidth + gap)
       scrollContainerRef.current.scrollTo({
         left: scrollPosition,
         behavior: 'smooth'
       })
     }
-  }, [currentIndex, touchStart])
+  }, [currentIndex])
+
+  // Aktualisiere currentIndex beim Scrollen mit passive listener
+  useEffect(() => {
+    const container = scrollContainerRef.current
+    if (!container) return
+
+    const handleScroll = () => {
+      const cardWidth = window.innerWidth - 3 * 16 // Card-Breite
+      const gap = 1.5 * 16 // Gap zwischen Cards
+      const scrollLeft = container.scrollLeft
+      const newIndex = Math.round(scrollLeft / (cardWidth + gap))
+      
+      if (newIndex !== currentIndex && newIndex >= 0 && newIndex < features.length) {
+        setCurrentIndex(newIndex)
+      }
+    }
+
+    container.addEventListener('scroll', handleScroll, { passive: true })
+    return () => container.removeEventListener('scroll', handleScroll)
+  }, [currentIndex, features.length])
 
   // ESC-Taste zum Schließen des Modals
   useEffect(() => {
@@ -111,13 +158,18 @@ const Features = () => {
 
   return (
     <section 
+      ref={sectionRef}
       id="features" 
       className="py-20 relative overflow-hidden border-t-4 border-b-4 border-gray-800"
       style={{
-        backgroundImage: `url(${regalImage})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
+        ...(shouldLoadBackground ? {
+          backgroundImage: `url(${regalImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        } : {
+          backgroundColor: '#f5f5dc'
+        })
       }}
     >
       {/* Overlay für bessere Text-Lesbarkeit */}
@@ -131,37 +183,58 @@ const Features = () => {
           </h2>
         </div>
 
-        {/* Mobile: Swipbarer Container */}
+        {/* Mobile: Swipbarer Container mit mehr Abstand */}
         <div 
           ref={scrollContainerRef}
-          className="md:hidden flex overflow-x-auto snap-x snap-mandatory scrollbar-hide mb-20"
+          className="md:hidden flex overflow-x-auto snap-x snap-mandatory scrollbar-hide mb-20 gap-6 px-4"
           onTouchStart={onTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={onTouchEnd}
           style={{
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
-            WebkitOverflowScrolling: 'touch'
+            WebkitOverflowScrolling: 'touch',
+            paddingLeft: '1rem',
+            paddingRight: '1rem'
           }}
         >
           {features.map((feature, index) => (
             <div
               key={index}
               className="relative h-80 cursor-pointer perspective-1000 group flex-shrink-0 snap-center"
-              style={{ width: '100vw' }}
+              style={{ 
+                width: 'calc(100vw - 3rem)',
+                minWidth: 'calc(100vw - 3rem)',
+                marginRight: '1.5rem'
+              }}
             >
-              {/* Card Container mit 3D Flip */}
+              {/* Card Container mit 3D Flip - Mobile: per Klick, Desktop: per Hover */}
               <div
-                className="relative w-full h-full transition-transform duration-700 transform-style-preserve-3d group-hover:rotate-y-180 group-hover:scale-105 mx-4"
+                className={`relative w-full h-full transition-transform duration-700 transform-style-preserve-3d ${
+                  flippedCards[index] ? 'rotate-y-180 scale-105' : ''
+                } md:group-hover:rotate-y-180 md:group-hover:scale-105`}
+                onClick={(e) => {
+                  // Nur auf Mobile: Klick zum Umdrehen
+                  // Prüfe, ob es wirklich nur ein Klick war (kein Swipe)
+                  const wasSwipe = touchStart && touchEnd && Math.abs(touchStart - touchEnd) > minSwipeDistance
+                  if (window.innerWidth < 768 && !wasSwipe) {
+                    setFlippedCards(prev => ({ ...prev, [index]: !prev[index] }))
+                  }
+                }}
+                style={{ transformStyle: 'preserve-3d' }}
               >
                 {/* Vorderseite - Nur Bild */}
                 <div
                   className="absolute inset-0 backface-hidden rounded-2xl shadow-lg overflow-hidden"
                   style={{
-                    backgroundImage: `url(${feature.image})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat',
+                    ...(feature.image ? {
+                      backgroundImage: `url(${feature.image})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      backgroundRepeat: 'no-repeat',
+                    } : {
+                      backgroundColor: '#e5e5e5'
+                    })
                   }}
                 >
                 </div>
@@ -186,6 +259,22 @@ const Features = () => {
                 </div>
               </div>
             </div>
+          ))}
+        </div>
+
+        {/* Mobile: Carousel Indikatoren */}
+        <div className="md:hidden flex justify-center gap-2 mb-8">
+          {features.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentIndex(index)}
+              className={`transition-all duration-300 rounded-full ${
+                index === currentIndex 
+                  ? 'w-8 h-2 bg-asia-green' 
+                  : 'w-2 h-2 bg-gray-400'
+              }`}
+              aria-label={`Zu Slide ${index + 1}`}
+            />
           ))}
         </div>
 
@@ -321,7 +410,8 @@ const Features = () => {
       )}
     </section>
   )
-}
+})
+
+Features.displayName = 'Features'
 
 export default Features
-

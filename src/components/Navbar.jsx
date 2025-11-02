@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, memo, useCallback } from 'react'
 import logoImage from '../test.jpg'
 
-const Navbar = () => {
+const Navbar = memo(() => {
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [isLogoModalOpen, setIsLogoModalOpen] = useState(false)
@@ -10,7 +10,7 @@ const Navbar = () => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20)
     }
-    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
@@ -35,15 +35,19 @@ const Navbar = () => {
           <div className="flex-shrink-0">
             <div className="flex items-center space-x-3">
               <div 
-                className="w-[72px] h-[72px] rounded-full bg-white p-0.5 flex items-center justify-center shadow-md cursor-pointer hover:opacity-90 transition-opacity"
+                className="w-[72px] h-[72px] rounded-full bg-white p-1 flex items-center justify-center shadow-md cursor-pointer hover:opacity-90 transition-opacity overflow-hidden"
                 onClick={() => setIsLogoModalOpen(true)}
+                style={{ borderRadius: '50%' }}
               >
                 <img 
                   src={logoImage} 
                   alt="Asia Taste Logo" 
-                  className="w-full h-full rounded-full object-cover scale-110 ml-3.5"
+                  className="w-full h-full rounded-full object-cover"
                   loading="eager"
-                  fetchPriority="high"
+                  fetchpriority="high"
+                  width="72"
+                  height="72"
+                  style={{ borderRadius: '50%', transform: 'translateX(3px)' }}
                 />
               </div>
               <a href="#home" className="text-2xl md:text-3xl font-bold text-green-500 hover:text-green-400 transition-colors">
@@ -166,7 +170,9 @@ const Navbar = () => {
       )}
     </nav>
   )
-}
+})
+
+Navbar.displayName = 'Navbar'
 
 export default Navbar
 

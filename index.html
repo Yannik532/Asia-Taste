@@ -2,12 +2,14 @@
 <html lang="de">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/png" href="/src/logo.png" />
+    <link rel="apple-touch-icon" href="/src/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Asia Taste - Dein Asia-Markt & Kiosk in Kamen. Frische Ramen to-go, authentische Snacks & Drinks, und tägliche Asia-Lebensmittel." />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Serif+JP:wght@400;500;700;900&family=Kosugi+Maru&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <!-- Fonts - Load only what we need, async -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Serif+JP:wght@400;500;700;900&family=Kosugi+Maru&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Serif+JP:wght@400;500;700;900&family=Kosugi+Maru&display=swap" rel="stylesheet"></noscript>
     <title>Asia Taste - Dein Asia-Markt & Kiosk in Kamen</title>
     <!-- Critical inline CSS for above-the-fold content -->
@@ -18,6 +20,8 @@
     <!-- Preconnect to improve font loading -->
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
     <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <!-- Resource hints for better performance -->
+    <meta http-equiv="X-DNS-Prefetch-Control" content="on">
   </head>
   <body>
     <div id="root"></div>

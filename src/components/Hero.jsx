@@ -1,7 +1,8 @@
+import { memo } from 'react'
 import aussenImage from '../aussen.png'
 import heroBgImage from '../hero.png'
 
-const Hero = () => {
+const Hero = memo(() => {
   return (
     <section 
       id="home" 
@@ -54,7 +55,7 @@ const Hero = () => {
                 Route starten
               </a>
               <a
-                href="https://www.instagram.com"
+                href="https://www.instagram.com/asia_taste_kamen/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-gradient-to-br from-asia-beige to-green-50 text-gray-800 px-8 py-4 rounded-full font-bold text-lg hover:from-green-50 hover:to-asia-beige transition-all hover:scale-105 shadow-lg hover:shadow-xl transform border-2 border-green-300"
@@ -90,7 +91,9 @@ const Hero = () => {
       </div>
     </section>
   )
-}
+})
+
+Hero.displayName = 'Hero'
 
 export default Hero
 

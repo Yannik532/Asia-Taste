@@ -1,6 +1,12 @@
+import { memo } from 'react'
+import { useIntersectionObserver } from '../hooks/useIntersectionObserver'
 import heroBgImage from '../hero.png'
 
-const Testimonials = () => {
+const Testimonials = memo(() => {
+  const [sectionRef, isSectionVisible] = useIntersectionObserver({
+    rootMargin: '100px',
+    disconnectAfterIntersect: false,
+  })
   const sortiment = [
     {
       title: 'Frische Ramen',
@@ -41,6 +47,7 @@ const Testimonials = () => {
 
   return (
     <section 
+      ref={sectionRef}
       id="testimonials" 
       className="py-20 relative"
       style={{
@@ -48,17 +55,19 @@ const Testimonials = () => {
       }}
     >
       {/* Gespiegeltes Hintergrundbild */}
-      <div 
-        className="absolute inset-0"
-        style={{
-          backgroundImage: `url(${heroBgImage})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          transform: 'scaleX(-1)',
-          opacity: '0.7',
-        }}
-      ></div>
+      {isSectionVisible && (
+        <div 
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `url(${heroBgImage})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            transform: 'scaleX(-1)',
+            opacity: '0.7',
+          }}
+        ></div>
+      )}
       {/* Linienmuster */}
       <div 
         className="absolute inset-0"
@@ -116,6 +125,8 @@ const Testimonials = () => {
       </div>
     </section>
   )
-}
+})
+
+Testimonials.displayName = 'Testimonials'
 
 export default Testimonials

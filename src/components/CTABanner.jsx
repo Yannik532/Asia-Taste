@@ -1,14 +1,26 @@
+import { memo } from 'react'
+import { useIntersectionObserver } from '../hooks/useIntersectionObserver'
 import ctaImage from '../cta.png'
 
-const CTABanner = () => {
+const CTABanner = memo(() => {
+  const [sectionRef, isSectionVisible] = useIntersectionObserver({
+    rootMargin: '100px',
+    disconnectAfterIntersect: false,
+  })
+
   return (
     <section 
+      ref={sectionRef}
       className="py-32 md:py-40 relative overflow-hidden border-t-4 border-b-4 border-gray-800"
       style={{
-        backgroundImage: `url(${ctaImage})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
+        ...(isSectionVisible ? {
+          backgroundImage: `url(${ctaImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        } : {
+          backgroundColor: '#f5f5dc'
+        })
       }}
     >
       {/* Overlay für bessere Text-Lesbarkeit */}
@@ -77,7 +89,7 @@ const CTABanner = () => {
             Route starten
           </a>
           <a
-            href="https://www.instagram.com"
+            href="https://www.instagram.com/asia_taste_kamen/"
             target="_blank"
             rel="noopener noreferrer"
             className="bg-white text-gray-900 px-12 py-6 rounded-full font-bold text-xl hover:bg-gray-100 transition-all hover:scale-110 shadow-xl hover:shadow-2xl transform duration-300 inline-block border-2 border-gray-300"
@@ -88,7 +100,9 @@ const CTABanner = () => {
       </div>
     </section>
   )
-}
+})
+
+CTABanner.displayName = 'CTABanner'
 
 export default CTABanner
 

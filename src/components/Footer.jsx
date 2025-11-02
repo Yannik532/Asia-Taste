@@ -1,4 +1,6 @@
-const Footer = () => {
+import { memo } from 'react'
+
+const Footer = memo(() => {
   const currentYear = new Date().getFullYear()
 
   return (
@@ -96,7 +98,7 @@ const Footer = () => {
               
               {/* Instagram */}
               <a
-                href="https://www.instagram.com"
+                href="https://www.instagram.com/asia_taste_kamen/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all hover:scale-105 shadow-lg hover:shadow-xl transform"
@@ -151,6 +153,8 @@ const Footer = () => {
       </div>
     </footer>
   )
-}
+})
+
+Footer.displayName = 'Footer'
 
 export default Footer
